@@ -1,0 +1,437 @@
+<?php
+session_start();
+require_once 'config/config.php';
+
+$loggedIn = isset($_SESSION['user_id']);
+$userRole = $_SESSION['role'] ?? 'user';
+$username = $_SESSION['username'] ?? '';
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Bencana BPBD</title>
+    <link rel="icon" href="uploads/logobpbd-minahasa.png" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/login.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
+</head>
+<body class="<?php echo $loggedIn ? 'logged-in' : 'login-page'; ?>">
+    <div id="login-page" style="display: <?php echo $loggedIn ? 'none' : 'flex'; ?>;">
+        <div class="login-container">
+            <div class="login-form-section">
+                <div class="bg-white p-5 rounded shadow-sm">
+                    <div class="welcome-section text-center mb-4">
+                        <div class="welcome-icon mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#00499d" class="bi bi-shield-check" viewBox="0 0 16 16">
+                                <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.485.646.646 0 0 1-.48 0 11.776 11.776 0 0 1-2.517-2.485C4.666 10.355 3.283 7.037 3.887 2.56A1.54 1.54 0 0 1 4.93 1.298c.658-.215 1.777-.57 2.887-.87z"/>
+                                <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="welcome-title">Selamat Datang</h3>
+                        <p class="welcome-subtitle">Sistem Pencetakan Laporan BPBD Kabupaten Minahasa</p>
+                        <p class="welcome-tagline">"Siap Melayani Masyarakat Dalam Penanggulangan Bencana"</p>
+                    </div>
+                    <h2 class="text-center mb-4">Login</h2>
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" id="username" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+            <div class="login-logo-section">
+                <div class="logo-container">
+                    <img src="uploads/logobpbd-minahasa.png" alt="BPBD Logo" class="bpbd-logo">
+                    <h3 class="logo-title">BADAN PENANGGULANGAN <br> BENCANA DAERAH</h3>
+                    <p class="logo-subtitle">Kabupaten Minahasa</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" style="display: <?php echo $loggedIn ? 'block' : 'none'; ?>;" class="p-4 p-md-5">
+        <div class="container">
+        <header class="bpbd-header shadow-sm rounded p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <div class="header-logo me-3">
+                        <img src="uploads/logobpbd-minahasa.png" alt="BPBD Logo" class="header-bpbd-logo">
+                    </div>
+                    <div>
+                        <h1 class="h2 h1-md fw-bold text-dark mb-1">Laporan Bencana</h1>
+                        <p class="text-muted mb-0">Sistem Pencetakan Laporan Bencana BPBD Kabupaten Minahasa</p>
+                        <p class="text-muted small mb-0">Selamat datang, <?php echo htmlspecialchars($username); ?> (<?php echo htmlspecialchars($userRole); ?>)</p>
+                    </div>
+                </div>
+                <div>
+                     <?php if ($userRole !== 'head'): ?>
+                        <a href="views/status_laporan.php" class="btn btn-warning text-dark fw-bold me-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history me-1" viewBox="0 0 16 16">
+                                <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.433l-.707-.708z"/>
+                                <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+                                <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+                            </svg>
+                            Status Laporan
+                        </a>
+                    <?php endif; ?>
+                    <a href="views/validation.php" class="btn btn-bpbd-primary me-2 <?php echo $userRole !== 'head' ? 'd-none' : ''; ?>" id="validate-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle me-1" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                        </svg>
+                        Validasi Laporan
+                    </a>
+                    <button id="logout-btn" class="btn btn-bpbd-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right me-1" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <h2 class="h5 fw-semibold mb-3 text-dark border-bottom pb-2">Tambah Laporan Baru</h2>
+                    <form id="disaster-form" enctype="multipart/form-data">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Kategori Laporan</label>
+                            <div class="d-flex gap-2">
+                                <input type="radio" class="btn-check" name="kategoriLaporan" id="kategori-bencana" value="bencana" checked>
+                                <label class="btn btn-outline-danger w-50" for="kategori-bencana">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-exclamation-triangle-fill me-1" viewBox="0 0 16 16">
+                                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                    </svg>
+                                    Bencana
+                                </label>
+                                <input type="radio" class="btn-check" name="kategoriLaporan" id="kategori-insiden" value="insiden">
+                                <label class="btn btn-outline-warning w-50" for="kategori-insiden">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-cone-striped me-1" viewBox="0 0 16 16">
+                                        <path d="m9.97 4.88.953 3.811C10.159 8.878 9.14 9 8 9c-1.14 0-2.158-.122-2.923-.309L6.03 4.88C6.635 4.957 7.3 5 8 5s1.365-.043 1.97-.12zm-.245-.978L8.97.88C8.718-.13 7.282-.13 7.03.88L6.275 3.9C6.8 3.965 7.382 4 8 4c.618 0 1.2-.035 1.725-.098zm4.396 8.613a.5.5 0 0 1 .037.96l-6 2a.5.5 0 0 1-.316 0l-6-2a.5.5 0 0 1 .037-.96l2.391-.598.565-2.257c.862.212 1.964.339 3.155.339s2.293-.127 3.155-.339l.565 2.257 2.391.598z"/>
+                                    </svg>
+                                    Insiden
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="form-grup-bencana">
+                            <div class="mb-3">
+                                <label for="jenisBencana" class="form-label">Jenis Bencana</label>
+                                <select id="jenisBencana" name="jenisBencana" class="form-select">
+                                    <option value="Banjir">Banjir</option>
+                                    <option value="Tanah Longsor">Tanah Longsor</option>
+                                    <option value="Angin Puting Beliung">Angin Puting Beliung</option>
+                                    <option value="Gempa Bumi">Gempa Bumi</option>
+                                    <option value="Kebakaran">Kebakaran</option>
+                                    <option value="Kebakaran Hutan">Kebakaran Hutan (Karhutla)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="jiwaTerdampak" class="form-label">Jumlah Jiwa Terdampak</label>
+                                <input type="number" id="jiwaTerdampak" name="jiwaTerdampak" min="0" class="form-control" placeholder="0" value="0">
+                            </div>
+                            <div class="mb-3">
+                                <label for="kkTerdampak" class="form-label">Jumlah KK Terdampak</label>
+                                <input type="number" id="kkTerdampak" name="kkTerdampak" min="0" class="form-control" placeholder="0" value="0">
+                            </div>
+                            <div class="mb-3">
+                                <label for="tingkatKerusakan" class="form-label">Tingkat Kerusakan</label>
+                                <select id="tingkatKerusakan" name="tingkatKerusakan" class="form-select">
+                                    <option value="Ringan">Ringan</option>
+                                    <option value="Sedang">Sedang</option>
+                                    <option value="Berat">Berat</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="form-grup-insiden" style="display: none;">
+                            <div class="mb-3">
+                                <label for="jenisInsiden" class="form-label">Jenis Insiden</label>
+                                <select id="jenisInsiden" name="jenisInsiden" class="form-select">
+                                    <option value="Pohon Tumbang">Pohon Tumbang</option>
+                                    <option value="Orang Hilang">Orang Hilang</option>
+                                </select>
+                            </div>
+                             <div class="mb-3">
+                                <label for="keteranganInsiden" class="form-label">Keterangan Singkat</label>
+                                <textarea id="keteranganInsiden" name="keteranganInsiden" class="form-control" rows="3" placeholder="Jelaskan situasi insiden. Contoh: Pohon tumbang menutupi jalan raya..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="kecamatan" class="form-label">Kecamatan</label>
+                            <select id="kecamatan" class="form-select">
+                                <option value="">Pilih Kecamatan</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lokasi" class="form-label">Lokasi (Desa/Kelurahan)</label>
+                            <select id="lokasi" name="lokasi" class="form-select" required>
+                                <option value="">Pilih Desa/Kelurahan</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="disasterDate" class="form-label">Tanggal Kejadian Bencana</label>
+                            <input type="date" id="disasterDate" name="disasterDate" required class="form-control" value="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="photos" class="form-label">Foto Bencana (Maks 5 foto, .jpg/.jpeg)</label>
+                            <input type="file" id="photos" name="photos[]" class="form-control" multiple accept=".jpg, .jpeg, image/jpeg">
+                            <div class="form-text">Pilih multiple foto dengan menekan Ctrl/Cmd + klik. Maksimal 5MB per foto. Hanya file JPG/JPEG.</div>
+                        </div>
+                        <button type="submit" class="w-100 btn btn-bpbd-primary fw-bold py-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Simpan Laporan
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="bg-white p-4 rounded shadow-sm mb-4">
+                    <div class="row align-items-center gy-3">
+                        <div class="col-md-3">
+                            <h2 class="h5 fw-bold text-dark mb-0">Filter Periode</h2>
+                            <p class="text-muted small mb-0">Laporan per bulan/tahun</p>
+                        </div>
+                        <div class="col-md-4 d-flex gap-2">
+                            <select id="filter-year" class="form-select border-primary fw-bold shadow-sm w-auto">
+                            </select>
+                            <select id="filter-month" class="form-select border-primary shadow-sm w-auto">
+                                <option value="" selected>Setahun Penuh</option>
+                                <option value="01">Januari</option>
+                                <option value="02">Februari</option>
+                                <option value="03">Maret</option>
+                                <option value="04">April</option>
+                                <option value="05">Mei</option>
+                                <option value="06">Juni</option>
+                                <option value="07">Juli</option>
+                                <option value="08">Agustus</option>
+                                <option value="09">September</option>
+                                <option value="10">Oktober</option>
+                                <option value="11">November</option>
+                                <option value="12">Desember</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-5 text-md-end d-flex gap-2 justify-content-end flex-wrap">
+                            <button id="print-cumulative-report" class="btn btn-dark btn-sm d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-table me-1" viewBox="0 0 16 16">
+                                  <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm15 2h-4v3h4V4zm0 4h-4v3h4V8zm0 4h-4v3h3a1 1 0 0 0 1-1v-2zm-5 3v-3H6v3h4zm-5 0v-3H1v2a1 1 0 0 0 1 1h3zm-4-4h4V8H1v3zm0-4h4V4H1v3zm5-3v3h4V4H6zm4 4H6v3h4V8z"/>
+                                </svg>
+                                Matriks Kejadian
+                            </button>
+                            <button id="print-impact-report" class="btn btn-warning btn-sm text-dark d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-people-fill me-1" viewBox="0 0 16 16">
+                                  <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+                                </svg>
+                                Matriks Dampak (KK/Jiwa)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded shadow-sm mb-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 border-bottom pb-2">
+                        <h2 class="h5 fw-semibold text-dark">Laporan Prioritas Bencana (SAW)</h2>
+                        <button id="print-report" class="btn btn-success mt-2 mt-md-0 d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer-fill me-2" viewBox="0 0 16 16">
+                              <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zm4 8.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zM6 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                              <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-1a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            </svg>
+                            Cetak Laporan Bencana
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="disaster-report-table" class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Peringkat</th>
+                                    <th scope="col">Jenis Bencana</th>
+                                    <th scope="col">Lokasi</th>
+                                    <th scope="col">Tanggal</th>
+                                    <th scope="col">Terdampak</th>
+                                    <th scope="col">Kerusakan</th>
+                                    <th scope="col">Indeks Dampak (SAW)</th>
+                                    <th scope="col">Foto</th>
+                                    <th scope="col">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-table-body-bencana">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded shadow-sm">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 border-bottom pb-2">
+                        <h2 class="h5 fw-semibold text-dark">Laporan Insiden Lainnya</h2>
+                        <button id="print-insiden-report" class="btn btn-info text-white mt-2 mt-md-0 d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer-fill me-2" viewBox="0 0 16 16">
+                              <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zm4 8.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zM6 11.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+                              <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-1a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            </svg>
+                            Cetak Laporan Insiden
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="insiden-report-table" class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Jenis Insiden</th>
+                                    <th scope="col">Lokasi</th>
+                                    <th scope="col">Keterangan</th>
+                                    <th scope="col">Tanggal</th>
+                                    <th scope="col">Foto</th>
+                                    <th scope="col">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-table-body-insiden">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="preview-modal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Preview Laporan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="preview-content">
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="confirm-print">Cetak</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="photo-modal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="photoModalLabel">Foto Bencana</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="photo-modal-image" src="" alt="Foto bencana" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Laporan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="edit-disaster-form" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <input type="hidden" id="edit-disaster-id" name="id">
+                        
+                        <div class="alert alert-warning small mb-3">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>Perhatian:</strong> Menyimpan perubahan akan mengubah status laporan menjadi <b>Pending</b> untuk divalidasi ulang oleh Head.
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="edit-jenisBencana" class="form-label">Jenis Laporan</label>
+                                <select id="edit-jenisBencana" name="jenisBencana" class="form-select">
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-lokasi" class="form-label">Lokasi (Desa/Kecamatan)</label>
+                                <input type="text" id="edit-lokasi" name="lokasi" required class="form-control">
+                            </div>
+
+                            <div class="col-md-4 field-bencana">
+                                <label for="edit-jiwaTerdampak" class="form-label">Jumlah Jiwa Terdampak</label>
+                                <input type="number" id="edit-jiwaTerdampak" name="jiwaTerdampak" min="0" class="form-control">
+                            </div>
+                            <div class="col-md-4 field-bencana">
+                                <label for="edit-kkTerdampak" class="form-label">Jumlah KK Terdampak</label>
+                                <input type="number" id="edit-kkTerdampak" name="kkTerdampak" min="0" class="form-control">
+                            </div>
+                            <div class="col-md-4 field-bencana">
+                                <label for="edit-tingkatKerusakan" class="form-label">Tingkat Kerusakan</label>
+                                <select id="edit-tingkatKerusakan" name="tingkatKerusakan" class="form-select">
+                                    <option value="Ringan">Ringan</option>
+                                    <option value="Sedang">Sedang</option>
+                                    <option value="Berat">Berat</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="edit-keterangan" class="form-label">Keterangan / Kronologis</label>
+                                <textarea id="edit-keterangan" name="keterangan" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="edit-disasterDate" class="form-label">Tanggal Kejadian Bencana</label>
+                                <input type="date" id="edit-disasterDate" name="disasterDate" required class="form-control">
+                            </div>
+                            <div class="col-12" id="edit-existing-photos-container" style="display: none;">
+                                <label class="form-label fw-bold">Foto Saat Ini (Centang kotak "Hapus" untuk menghapus foto)</label>
+                                <div id="edit-existing-photos" class="row g-2">
+                                </div>
+                                <hr>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tambah Foto Dokumentasi (Hanya .jpg/.jpeg)</label>
+                                <input type="file" name="photos[]" class="form-control" multiple accept=".jpg, .jpeg, image/jpeg">
+                                <div class="form-text small">Pilih foto baru jika ingin menambahkan dokumentasi.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-bpbd-primary fw-bold">Simpan Perubahan</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="print-area" class="d-none"></div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/saw.js"></script>
+    <script src="assets/js/print.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

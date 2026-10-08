@@ -1,0 +1,9 @@
+Nama database: disaster_reporting
+
+Akun Staff
+Username: Staff
+Password: password123
+
+Akun Kaban
+Username: Kaban
+Password: password123
